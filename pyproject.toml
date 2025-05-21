@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "py-api-dumper"
+version = "0.1"
+description = "Python API dumping and comparison tool"
+readme = "README.md"
+requires-python = ">=3.9"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Karl Wette", email = "karl.wette@anu.edu.au" },
+]
+
+[project.scripts]
+py-api-dumper = "py_api_dumper.cli:cli"
