@@ -18,5 +18,5 @@ py-api-dumper = "py_api_dumper.cli:cli"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "--cov=py_api_dumper --cov-report=term-missing"
+addopts = "--cov=py_api_dumper --cov-report=term-missing --cov-fail-under=100"
 testpaths = ["test"]
