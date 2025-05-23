@@ -39,13 +39,35 @@ def test_dump_module_str_name(request):
     _compare_dumps(api_dump_text)
 
 
-def test_dump_cli(request):
+def test_dump_module_cli(request):
     """
     Create API dump using the command-line interface.
     """
     api_dump_text = request.path.parent / "test_dump.txt.tmp"
     cli("dump", "--output", api_dump_text, "--text", "api_ref")
     _compare_dumps(api_dump_text)
+
+
+def test_dump_file(request):
+    """
+    Test save and loading API dumps.
+    """
+    api_dump = APIDump.from_modules(api_ref)
+    api_dump_file = request.path.parent / "test_dump.tmp"
+    api_dump.save_to_file(api_dump_file)
+    api_dump_from_file = APIDump.load_from_file(api_dump_file)
+    assert api_dump == api_dump_from_file
+
+
+def test_dump_file_cli(request):
+    """
+    Test save and loading API dumps using the command-line interface.
+    """
+    api_dump = APIDump.from_modules(api_ref)
+    api_dump_file = request.path.parent / "test_dump.tmp"
+    cli("dump", "--output", api_dump_file, "api_ref")
+    api_dump_from_file = APIDump.load_from_file(api_dump_file)
+    assert api_dump == api_dump_from_file
 
 
 def test_cli():

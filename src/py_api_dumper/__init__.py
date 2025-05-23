@@ -1,8 +1,10 @@
 import importlib
 import importlib.metadata
 import inspect
+import json
 import pkgutil
 import sys
+from pathlib import Path
 from types import ModuleType
 from typing import Optional, TextIO, Type, TypeVar, Union
 
@@ -20,6 +22,9 @@ class APIDump:
     def __init__(self, *, api, versions):
         self._api = api
         self._versions = versions
+
+    def __eq__(self, other):
+        return self._api == other._api and self._versions == other._versions
 
     @classmethod
     def from_modules(
@@ -219,3 +224,44 @@ class APIDump:
             indent = "\t" * (len(entry) - 1)
             entry_str = " : ".join(str(e) for e in entry[-1])
             print(indent + entry_str, file=to)
+
+    def save_to_file(self, file_path: Path) -> None:
+        """
+        Save the API dump to a file in a reloadable format.
+
+        Args:
+            file_path (Path):
+                Name of file to save to.
+        """
+
+        # Assemble file content
+        content = {"versions": self._versions, "api": list(sorted(self._api))}
+
+        # Save to file as JSON
+        json.dump(content, file_path.open("wt"))
+
+    @classmethod
+    def load_from_file(cls: Type[APIDumpType], file_path: Path) -> APIDumpType:
+        """
+        Load an API dump from a file.
+
+        Args:
+            file_path (Path):
+                Name of file to load.
+
+        Returns:
+            APIDumpType: APIDump instance.
+        """
+
+        # Load from file as JSON
+        content = json.load(file_path.open("rt"))
+
+        # Create instance
+        inst = cls(
+            api=set(tuple(tuple(e) for e in entry) for entry in content["api"]),
+            versions=dict(
+                (module, version) for module, version in content["versions"].items()
+            ),
+        )
+
+        return inst

@@ -20,6 +20,11 @@ def dump(args):
         # Print API dump as text to the given --output file
         dump.print_as_text(to=args.output.open("w"))
 
+    else:
+
+        # Save the API dump to the given --output file in a reloadable format
+        dump.save_to_file(args.output)
+
 
 def cli(*argv):
 
