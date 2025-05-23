@@ -2,7 +2,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from . import APIDump
+from . import APIDiff, APIDump
 
 
 def dump(args):
@@ -18,12 +18,30 @@ def dump(args):
     elif args.text:
 
         # Print API dump as text to the given --output file
-        dump.print_as_text(to=args.output.open("w"))
+        dump.print_as_text(args.output.open("wt"))
 
     else:
 
         # Save the API dump to the given --output file in a reloadable format
         dump.save_to_file(args.output)
+
+
+def diff(args):
+
+    # Load API diff
+    diff = APIDiff.load_from_files(args.old_dump, args.new_dump)
+
+    file = sys.stdout if args.output is None else args.output.open("wt")
+
+    if args.json:
+
+        # Print API diff as JSON to the given --output file
+        diff.print_as_json(file)
+
+    else:
+
+        # Print API diff as text to the given --output file
+        diff.print_as_text(file)
 
 
 def cli(*argv):
@@ -46,6 +64,22 @@ def cli(*argv):
         "modules", type=str, nargs="+", help="Dump APIs of these modules"
     )
     parser_dump.set_defaults(subcommand=dump)
+    parser_diff = subparsers.add_parser(
+        "diff", description="compare APIs", help="compare APIs"
+    )
+    parser_diff.add_argument(
+        "-o", "--output", type=Path, default=None, help="Output API diff to this file"
+    )
+    parser_diff.add_argument(
+        "-j", "--json", action="store_true", help="Output API diff in JSON format"
+    )
+    parser_diff.add_argument(
+        "old_dump", type=Path, help="File containing dump of old API"
+    )
+    parser_diff.add_argument(
+        "new_dump", type=Path, help="File containing dump of new API"
+    )
+    parser_diff.set_defaults(subcommand=diff)
 
     # Parse command line
     argv = [str(a) for a in (argv or sys.argv[1:] or ["--help"])]

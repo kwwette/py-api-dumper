@@ -6,7 +6,7 @@ import pkgutil
 import sys
 from pathlib import Path
 from types import ModuleType
-from typing import Optional, TextIO, Type, TypeVar, Union
+from typing import List, Optional, TextIO, Tuple, Type, TypeVar, Union
 
 __author__ = "Karl Wette"
 __version__ = "0.1"
@@ -19,9 +19,10 @@ class APIDump:
     Dump the public API of a Python module and its members.
     """
 
-    def __init__(self, *, api, versions):
+    def __init__(self, *, api, versions, file_path=None):
         self._api = api
         self._versions = versions
+        self._file_path = file_path
 
     def __eq__(self, other):
         return self._api == other._api and self._versions == other._versions
@@ -210,20 +211,22 @@ class APIDump:
         entry = prefix + [("MEMBER", name, typ)]
         self._add_api_entry(entry)
 
-    def print_as_text(self, to: Optional[TextIO] = sys.stdout) -> None:
+    def print_as_text(self, file: Optional[TextIO] = None) -> None:
         """
         Print the API dump as text to a file.
 
         Args:
-            to (Optional[TextIO]):
+            file (Optional[TextIO]):
                 File to print to (default: standard output).
         """
+        if file is None:
+            file = sys.stdout
 
         # Print API dump
         for entry in sorted(self._api):
             indent = "\t" * (len(entry) - 1)
             entry_str = " : ".join(str(e) for e in entry[-1])
-            print(indent + entry_str, file=to)
+            print(indent + entry_str, file=file)
 
     def save_to_file(self, file_path: Path) -> None:
         """
@@ -238,7 +241,9 @@ class APIDump:
         content = {"versions": self._versions, "api": list(sorted(self._api))}
 
         # Save to file as JSON
-        json.dump(content, file_path.open("wt"))
+        with file_path.open("wt") as file:
+            json.dump(content, file)
+            file.write("\n")
 
     @classmethod
     def load_from_file(cls: Type[APIDumpType], file_path: Path) -> APIDumpType:
@@ -254,7 +259,8 @@ class APIDump:
         """
 
         # Load from file as JSON
-        content = json.load(file_path.open("rt"))
+        with file_path.open("rt") as file:
+            content = json.load(file)
 
         # Create instance
         inst = cls(
@@ -262,6 +268,147 @@ class APIDump:
             versions=dict(
                 (module, version) for module, version in content["versions"].items()
             ),
+            file_path=file_path,
         )
 
         return inst
+
+
+APIDiffType = TypeVar("APIDiffType", bound="APIDiff")
+
+
+class APIDiff:
+    """
+    Show the differences between two Python public API dumps.
+    """
+
+    def __init__(
+        self,
+        old: APIDump,
+        new: APIDump,
+    ):
+        """
+        Differences between two Python public API dumps.
+
+        Args:
+            old (APIDump):
+                Dump of the old public API.
+            new (APIDump):
+                Dump of the new public API.
+        """
+
+        self._old_versions = old._versions
+        self._old_path = old._file_path
+
+        self._new_versions = new._versions
+        self._new_path = new._file_path
+
+        # Entries added to `new` that are not in `old`
+        self._added = new._api - old._api
+
+        # Entries removed from `new` that remain in `old`
+        self._removed = old._api - new._api
+
+    @classmethod
+    def load_from_files(
+        cls: Type[APIDiffType], old_path: Path, new_path: Path
+    ) -> APIDiffType:
+        """
+        Differences between two Python public API dumps loaded from files.
+
+        Args:
+            old_path (Path):
+                Name of file containing dump of the old public API.
+            new_path (Path):
+                Name of file containing dump of the new public API.
+
+        Returns:
+            APIDiffType: APIDiff instance.
+        """
+
+        # Load dumps from files
+        old = APIDump.load_from_file(old_path)
+        new = APIDump.load_from_file(new_path)
+
+        # Create instance
+        inst = cls(old, new)
+
+        return inst
+
+    def equal(self):
+        """
+        Return True if there are no differences, False otherwise.
+        """
+        return len(self._added) == 0 and len(self._removed) == 0
+
+    def print_as_text(self, file: Optional[TextIO] = None) -> None:
+        """
+        Print the API differences as text to a file.
+
+        Args:
+            file (Optional[TextIO]):
+                File to print to (default: standard output).
+        """
+        file = file or sys.stdout
+
+        # Print file names and versions
+        for prefix, file_path, versions in (
+            ("---", self._old_path, self._old_versions),
+            ("+++", self._new_path, self._new_versions),
+        ):
+            print(
+                prefix,
+                "/dev/null" if file_path is None else str(file_path),
+                " ".join(
+                    f"{module}={version}"
+                    for module, version in versions.items()
+                    if version is not None
+                ),
+                file=file,
+            )
+
+        # Print API entries added and removed
+        for prefix, entries in (("-", self._removed), ("+", self._added)):
+            stack: List[Tuple] = []
+            for entry in sorted(entries):
+
+                # Find the longest common prefix with respect to previously-printed entries
+                i_start = 0
+                while len(stack) > 0:
+                    for i in range(max(len(stack[-1]), len(entry))):
+                        if stack[-1][0:i] == entry[0:i]:
+                            i_start = i
+                    if i_start > 0:
+                        break
+                    stack.pop()  # pragma: no cover
+
+                # Print entry without common prefix; add to stack of printed entries
+                for i in range(i_start, len(entry)):
+                    indent = "\t" * i
+                    entry_str = " : ".join(str(e) for e in entry[i])
+                    print(prefix + indent + entry_str, file=file)
+                stack.append(entry)
+
+    def print_as_json(self, file: Optional[TextIO] = None) -> None:
+        """
+        Print the API differences as JSON to a file.
+
+        Args:
+            file (Optional[TextIO]):
+                File to print to (default: standard output).
+        """
+        file = file or sys.stdout
+
+        # Assemble file content
+        content = {
+            "old_dump": str(self._old_path),
+            "new_dump": str(self._new_path),
+            "old_versions": self._old_versions,
+            "new_versions": self._new_versions,
+            "removed": list(sorted(self._removed)),
+            "added": list(sorted(self._added)),
+        }
+
+        # Save to file as JSON
+        json.dump(content, file)
+        file.write("\n")

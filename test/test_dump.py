@@ -61,7 +61,7 @@ def test_dump_file(request):
 
 def test_dump_file_cli(request):
     """
-    Test save and loading API dumps using the command-line interface.
+    Test saving and loading API dumps using the command-line interface.
     """
     api_dump = APIDump.from_modules(api_ref)
     api_dump_file = request.path.parent / "test_dump.tmp"
