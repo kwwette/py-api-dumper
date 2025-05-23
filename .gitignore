@@ -1,3 +1,7 @@
+.coverage
 /dist
 /src/*.egg-info
+/test/*.tmp
+/test/api_ref/*.o
+/test/api_ref/*.so
 __pycache__

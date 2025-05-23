@@ -1,0 +1,61 @@
+MODULE : api_ref
+	FUNCTION : F1 : no-return-type
+		REQUIRED : 0 : a : no-type
+	FUNCTION : F2 : no-return-type
+		OPTIONAL : c : no-type
+		OPTIONAL : d : no-type
+		REQUIRED : 0 : a : no-type
+		REQUIRED : 1 : b : no-type
+	FUNCTION : F3 : <class 'str'>
+		OPTIONAL : b : <class 'bool'>
+		OPTIONAL : d : no-type
+		REQUIRED : 0 : a : <class 'int'>
+	FUNCTION : F4 : None
+		OPTIONAL : b : typing.Optional[bool]
+		REQUIRED : 0 : a : typing.Union[typing.List, str]
+	MEMBER : v1 : int
+	MEMBER : v2 : str
+	MODULE : ext_mod
+		FUNCTION : do_something : no-return-type
+			REQUIRED : 0 : a : no-type
+			REQUIRED : 1 : b : no-type
+			REQUIRED : 2 : c : no-type
+		FUNCTION : do_task : no-signature
+	MODULE : pub_mod
+		CLASS : C1
+			CLASS : C2
+				FUNCTION : N1 : no-return-type
+					OPTIONAL : hh : no-type
+					REQUIRED : 0 : self : no-type
+					REQUIRED : 1 : gg : no-type
+				FUNCTION : __init__ : no-return-type
+					OPTIONAL : h : no-type
+					REQUIRED : 0 : self : no-type
+					REQUIRED : 1 : g : no-type
+				MEMBER : g1 : int
+			CLASSMETHOD : from_args : no-return-type
+				REQUIRED : 0 : z : no-type
+			FUNCTION : M1 : no-return-type
+				REQUIRED : 0 : self : no-type
+				REQUIRED : 1 : z : no-type
+			FUNCTION : M2 : no-return-type
+				OPTIONAL : v : no-type
+				REQUIRED : 0 : self : no-type
+				REQUIRED : 1 : z : no-type
+				REQUIRED : 2 : u : no-type
+			FUNCTION : M3 : no-return-type
+				OPTIONAL : y : <class 'float'>
+				OPTIONAL : z : <class 'float'>
+				REQUIRED : 0 : self : no-type
+				REQUIRED : 1 : w : <class 'int'>
+				REQUIRED : 2 : x : <class 'str'>
+			FUNCTION : __init__ : no-return-type
+				OPTIONAL : y : no-type
+				REQUIRED : 0 : self : no-type
+				REQUIRED : 1 : x : no-type
+			FUNCTION : help : no-return-type
+			MEMBER : f1 : float
+			MEMBER : f2 : str
+			PROPERTY : v
+			STATICMETHOD : help : no-return-type
+		MEMBER : d1 : int

@@ -1,0 +1,57 @@
+from pathlib import Path
+
+import api_ref
+import pytest
+
+from py_api_dumper import APIDump
+from py_api_dumper.cli import cli
+
+
+def _compare_dumps(api_dump_text):
+    """
+    Compare API dump of `api_ref` against reference result.
+    """
+    api_dump_text_ref = Path(api_ref.__file__).parent / "api_ref.txt"
+    lines_to_compare = [
+        f.read_text().replace("\t", "    ").splitlines()
+        for f in (api_dump_text, api_dump_text_ref)
+    ]
+    assert lines_to_compare[0] == lines_to_compare[1]
+
+
+def test_dump_module(request):
+    """
+    Create API dump from module.
+    """
+    api_dump = APIDump.from_modules(api_ref)
+    api_dump_text = request.path.parent / "test_dump.txt.tmp"
+    api_dump.print_as_text(api_dump_text.open("w"))
+    _compare_dumps(api_dump_text)
+
+
+def test_dump_module_str_name(request):
+    """
+    Create API dump from module string name.
+    """
+    api_dump = APIDump.from_modules("api_ref")
+    api_dump_text = request.path.parent / "test_dump.txt.tmp"
+    api_dump.print_as_text(api_dump_text.open("w"))
+    _compare_dumps(api_dump_text)
+
+
+def test_dump_cli(request):
+    """
+    Create API dump using the command-line interface.
+    """
+    api_dump_text = request.path.parent / "test_dump.txt.tmp"
+    cli("dump", "--output", api_dump_text, "--text", "api_ref")
+    _compare_dumps(api_dump_text)
+
+
+def test_cli():
+    """
+    Test the command-line interface.
+    """
+    with pytest.raises(SystemExit):
+        cli("--help")
+    cli("dump", "api_ref")

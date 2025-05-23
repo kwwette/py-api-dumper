@@ -4,7 +4,7 @@ import inspect
 import pkgutil
 import sys
 from types import ModuleType
-from typing import List, Optional, TextIO, Type, TypeVar, Union
+from typing import Optional, TextIO, Type, TypeVar, Union
 
 __author__ = "Karl Wette"
 __version__ = "0.1"
@@ -23,13 +23,13 @@ class APIDump:
 
     @classmethod
     def from_modules(
-        cls: Type[APIDumpType], modules: List[Union[ModuleType, str]]
+        cls: Type[APIDumpType], *modules: Union[ModuleType, str]
     ) -> APIDumpType:
         """
         Dump the public API of the given Python modules.
 
         Args:
-            modules (List[Union[ModuleType, str]]):
+            *modules (Union[ModuleType, str]):
                 List of modules and/or their string names.
 
         Returns:
@@ -45,7 +45,7 @@ class APIDump:
         # Dump module APIs
         for module in all_modules:
             module_prefix = [("MODULE", m) for m in module.__name__.split(".")]
-            inst._dump_struct(module_prefix, module)
+            inst._dump_struct(module_prefix, module, module)
 
         return inst
 
@@ -104,7 +104,7 @@ class APIDump:
         # Add API entry
         self._api.add(tuple(entry))
 
-    def _dump_struct(self, prefix, struct):
+    def _dump_struct(self, prefix, struct, module):
 
         # Add base entry
         self._add_api_entry(prefix)
@@ -113,23 +113,35 @@ class APIDump:
         members = inspect.getmembers(struct)
         for member_name, member in members:
 
-            # Exclude any private members
-            if member_name.startswith("_"):
-                pass
-
-            # Skip any modules
+            # Exclude any modules
             # - all relevant modules have already been found by _load_all_modules()
-            elif inspect.ismodule(member):
-                pass
+            if inspect.ismodule(member):
+                continue
+
+            # Exclude any private members, except class constructors
+            if member_name.startswith("_") and member_name != "__init__":
+                continue
+
+            # Exclude any members defined in another module
+            # - this should catch any `import`ed members
+            if hasattr(member, "__module__") and member.__module__ != module.__name__:
+                continue
 
             # Dump classes
-            elif inspect.isclass(member):
+            if inspect.isclass(member):
                 class_prefix = prefix + [("CLASS", member.__name__)]
-                self._dump_struct(class_prefix, member)
+                self._dump_struct(class_prefix, member, module)
 
-            # Dump functions
+            # Dump methods and functions
             elif inspect.isroutine(member):
-                self._dump_function(prefix, member)
+                if isinstance(
+                    inspect.getattr_static(struct, member.__name__), staticmethod
+                ):
+                    self._dump_function(prefix, "STATICMETHOD", member)
+                if inspect.ismethod(member) and isinstance(member.__self__, type):
+                    self._dump_function(prefix, "CLASSMETHOD", member)
+                else:
+                    self._dump_function(prefix, "FUNCTION", member)
 
             # Dump properties
             elif isinstance(member, property) or inspect.isgetsetdescriptor(member):
@@ -139,7 +151,7 @@ class APIDump:
                 # Dump everything else
                 self._dump_member(prefix, member_name, member)
 
-    def _dump_function(self, prefix, fun):
+    def _dump_function(self, prefix, fun_type, fun):
 
         # Try to get function signature
         try:
@@ -153,9 +165,9 @@ class APIDump:
                 return_type = str(sig.return_annotation)
             else:
                 return_type = "no-return-type"
-            func_entry = prefix + [("FUNCTION", fun.__name__, return_type)]
+            func_entry = prefix + [(fun_type, fun.__name__, return_type)]
         else:
-            func_entry = prefix + [("FUNCTION", fun.__name__, "no-signature")]
+            func_entry = prefix + [(fun_type, fun.__name__, "no-signature")]
         self._add_api_entry(func_entry)
 
         # Add function signature, if available
@@ -166,11 +178,14 @@ class APIDump:
                     par_type = str(par.annotation)
                 else:
                     par_type = "no-type"
-                if par.default == par.empty:
+                if par.default != par.empty or par.kind in (
+                    par.VAR_POSITIONAL,
+                    par.VAR_KEYWORD,
+                ):
+                    par_entry = [("OPTIONAL", par.name, par_type)]
+                else:
                     par_entry = [("REQUIRED", n_req_arg, par.name, par_type)]
                     n_req_arg += 1
-                else:
-                    par_entry = [("OPTIONAL", par.name, par_type)]
                 self._add_api_entry(func_entry + par_entry)
 
     def _dump_property(self, prefix, name):
@@ -202,5 +217,5 @@ class APIDump:
         # Print API dump
         for entry in sorted(self._api):
             indent = "\t" * (len(entry) - 1)
-            entry_str = " ".join(str(e) for e in entry[-1])
+            entry_str = " : ".join(str(e) for e in entry[-1])
             print(indent + entry_str, file=to)
