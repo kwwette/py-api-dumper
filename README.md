@@ -46,7 +46,7 @@ different versions of the same module.
   $ py-api-dumper diff -o mymod.diff ...
   ```
 
-  This will write out the API differences to `mymod.diff`  in JSON format:
+  This will write out the API differences to `mymod.diff` in JSON format:
 
   * the paths to the dumps of the old and new APIs, e.g. `mymod-old.dump`
     vs. `mymod-new.dump`;
