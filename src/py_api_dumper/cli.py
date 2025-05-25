@@ -86,4 +86,7 @@ def cli(*argv):
     args = parser.parse_args(argv)
 
     # Execute sub-command
-    args.subcommand(args)
+    try:
+        args.subcommand(args)
+    except BrokenPipeError:  # pragma: no cover
+        pass
