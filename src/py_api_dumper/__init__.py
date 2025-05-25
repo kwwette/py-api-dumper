@@ -228,14 +228,15 @@ class APIDump:
             entry_str = " : ".join(str(e) for e in entry[-1])
             print(indent + entry_str, file=file)
 
-    def save_to_file(self, file_path: Path) -> None:
+    def save_to_file(self, file_path: Union[Path, str]) -> None:
         """
         Save the API dump to a file in a reloadable format.
 
         Args:
-            file_path (Path):
+            file_path (Union[Path, str]):
                 Name of file to save to.
         """
+        file_path = Path(file_path)
 
         # Assemble file content
         content = {"versions": self._versions, "api": list(sorted(self._api))}
@@ -246,17 +247,20 @@ class APIDump:
             file.write("\n")
 
     @classmethod
-    def load_from_file(cls: Type[APIDumpType], file_path: Path) -> APIDumpType:
+    def load_from_file(
+        cls: Type[APIDumpType], file_path: Union[Path, str]
+    ) -> APIDumpType:
         """
         Load an API dump from a file.
 
         Args:
-            file_path (Path):
+            file_path (Union[Path, str]):
                 Name of file to load.
 
         Returns:
             APIDumpType: APIDump instance.
         """
+        file_path = Path(file_path)
 
         # Load from file as JSON
         with file_path.open("rt") as file:
@@ -311,15 +315,15 @@ class APIDiff:
 
     @classmethod
     def load_from_files(
-        cls: Type[APIDiffType], old_path: Path, new_path: Path
+        cls: Type[APIDiffType], old_path: Union[Path, str], new_path: Union[Path, str]
     ) -> APIDiffType:
         """
         Differences between two Python public API dumps loaded from files.
 
         Args:
-            old_path (Path):
+            old_path (Union[Path, str]):
                 Name of file containing dump of the old public API.
-            new_path (Path):
+            new_path (Union[Path, str]):
                 Name of file containing dump of the new public API.
 
         Returns:
