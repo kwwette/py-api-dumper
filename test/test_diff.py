@@ -390,7 +390,7 @@ def test_diff_cli_json(api_dump_file, api_dump_new_file, request, monkeypatch, c
     """
     Test writing API diffs in JSON format using the command-line interface.
     """
-    api_diff = APIDiff.load_from_files(api_dump_file, api_dump_new_file)
+    api_diff = APIDiff.from_files(api_dump_file, api_dump_new_file)
     cli("diff", api_dump_file, api_dump_new_file, "--json")
     captured = capfd.readouterr()
     api_diff_json = json.loads(captured.out)

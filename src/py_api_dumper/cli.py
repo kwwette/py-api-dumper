@@ -29,7 +29,7 @@ def dump(args):
 def diff(args):
 
     # Load API diff
-    diff = APIDiff.load_from_files(args.old_dump, args.new_dump)
+    diff = APIDiff.from_files(args.old_dump, args.new_dump)
 
     file = sys.stdout if args.output is None else args.output.open("wt")
 

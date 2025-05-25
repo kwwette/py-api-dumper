@@ -314,7 +314,7 @@ class APIDiff:
         self._removed = old._api - new._api
 
     @classmethod
-    def load_from_files(
+    def from_files(
         cls: Type[APIDiffType], old_path: Union[Path, str], new_path: Union[Path, str]
     ) -> APIDiffType:
         """
