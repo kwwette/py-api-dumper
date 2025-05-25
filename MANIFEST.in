@@ -1,0 +1,5 @@
+prune test
+include test/*.py
+include test/api_ref/*.c
+include test/api_ref/*.py
+include test/api_ref/*.txt
