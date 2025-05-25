@@ -53,9 +53,10 @@ MODULE : api_ref
 				OPTIONAL : y : no-type
 				REQUIRED : 0 : self : no-type
 				REQUIRED : 1 : x : no-type
-			FUNCTION : help : no-return-type
 			MEMBER : f1 : float
 			MEMBER : f2 : str
 			PROPERTY : v
 			STATICMETHOD : help : no-return-type
+		FUNCTION : F1 : no-return-type
+			REQUIRED : 0 : x : no-type
 		MEMBER : d1 : int

@@ -82,3 +82,6 @@ _d2 = 94
 
 # member with private type (considered private)
 d3 = _C4()
+
+# public function
+F1 = lambda x: x  # noqa: E731

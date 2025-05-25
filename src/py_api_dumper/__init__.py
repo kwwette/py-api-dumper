@@ -151,14 +151,16 @@ class APIDump:
 
             # Dump methods and functions
             elif inspect.isroutine(member):
-                if isinstance(
-                    inspect.getattr_static(struct, member.__name__), staticmethod
-                ):
-                    self._dump_function(prefix, "STATICMETHOD", member)
-                if inspect.ismethod(member) and isinstance(member.__self__, type):
-                    self._dump_function(prefix, "CLASSMETHOD", member)
+                try:
+                    attr_static = inspect.getattr_static(struct, member_name)
+                except AttributeError:  # pragma: no cover
+                    attr_static = None
+                if isinstance(attr_static, staticmethod):
+                    self._dump_function(prefix, "STATICMETHOD", member_name, member)
+                elif inspect.ismethod(member) and isinstance(member.__self__, type):
+                    self._dump_function(prefix, "CLASSMETHOD", member_name, member)
                 else:
-                    self._dump_function(prefix, "FUNCTION", member)
+                    self._dump_function(prefix, "FUNCTION", member_name, member)
 
             # Dump properties
             elif isinstance(member, property) or inspect.isgetsetdescriptor(member):
@@ -168,7 +170,7 @@ class APIDump:
                 # Dump everything else
                 self._dump_member(prefix, member_name, member)
 
-    def _dump_function(self, prefix, fun_type, fun):
+    def _dump_function(self, prefix, fun_type, fun_name, fun):
 
         # Try to get function signature
         try:
@@ -182,9 +184,9 @@ class APIDump:
                 return_type = str(sig.return_annotation)
             else:
                 return_type = "no-return-type"
-            func_entry = prefix + [(fun_type, fun.__name__, return_type)]
+            func_entry = prefix + [(fun_type, fun_name, return_type)]
         else:
-            func_entry = prefix + [(fun_type, fun.__name__, "no-signature")]
+            func_entry = prefix + [(fun_type, fun_name, "no-signature")]
         self._add_api_entry(func_entry)
 
         # Add function signature, if available
