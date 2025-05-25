@@ -180,7 +180,7 @@ class APIDump:
 
         # Add function entry
         if sig is not None:
-            if sig.return_annotation != sig.empty:
+            if sig.return_annotation is not sig.empty:
                 return_type = str(sig.return_annotation)
             else:
                 return_type = "no-return-type"
@@ -193,11 +193,11 @@ class APIDump:
         if sig is not None:
             n_req_arg = 0
             for n, par in enumerate(sig.parameters.values()):
-                if par.annotation != par.empty:
+                if par.annotation is not par.empty:
                     par_type = str(par.annotation)
                 else:
                     par_type = "no-type"
-                if par.default != par.empty or par.kind in (
+                if par.default is not par.empty or par.kind in (
                     par.VAR_POSITIONAL,
                     par.VAR_KEYWORD,
                 ):
