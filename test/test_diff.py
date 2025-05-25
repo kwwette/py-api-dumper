@@ -121,6 +121,32 @@ def test_diff_added_function(api_dump, monkeypatch):
     )
 
 
+def test_diff_added_function_argument(api_dump, monkeypatch):
+    """
+    Test diff with added function argument.
+    """
+    monkeypatch.setattr(api_ref, "__version__", "0.2", raising=False)
+
+    def F1(a, b):
+        pass
+
+    monkeypatch.setattr(api_ref, "F1", F1, raising=False)
+    monkeypatch.setattr(api_ref.F1, "__module__", api_ref.__name__)
+    api_dump_new = APIDump.from_modules(api_ref)
+    api_diff = APIDiff(api_dump, api_dump_new)
+    assert not api_diff.equal()
+    _check_diff(
+        api_diff,
+        """
+        --- /dev/null api_ref=0.1
+        +++ /dev/null api_ref=0.2
+        +MODULE : api_ref
+        +    FUNCTION : F1 : no-return-type
+        +        REQUIRED : 1 : b : no-type
+        """,
+    )
+
+
 def test_diff_removed_function(api_dump, monkeypatch):
     """
     Test diff with removed function.
