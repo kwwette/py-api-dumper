@@ -341,7 +341,17 @@ def test_diff_cli(api_dump_file, api_dump_new_file, request, monkeypatch, capfd)
     wd = request.path.parent
     monkeypatch.chdir(wd)
     cli("diff", api_dump_file.relative_to(wd), api_dump_new_file.relative_to(wd))
-    captured = capfd.readouterr()
+    diff_1 = capfd.readouterr().out
+    api_diff_file = wd / "test_diff.txt.tmp"
+    cli(
+        "diff",
+        api_dump_file.relative_to(wd),
+        api_dump_new_file.relative_to(wd),
+        "-o",
+        api_diff_file,
+        "-t",
+    )
+    diff_2 = api_diff_file.read_text()
     expected = """
     --- test_dump.tmp api_ref=0.1
     +++ test_dump_new.tmp api_ref=1.0
@@ -383,17 +393,18 @@ def test_diff_cli(api_dump_file, api_dump_new_file, request, monkeypatch, capfd)
     +				REQUIRED : 0 : self : no-type
     """
     expected = textwrap.dedent(expected).lstrip().replace("    ", "\t")
-    assert captured.out == expected
+    assert diff_1 == expected
+    assert diff_2 == expected
 
 
-def test_diff_cli_json(api_dump_file, api_dump_new_file, request, monkeypatch, capfd):
+def test_diff_cli_json(api_dump_file, api_dump_new_file, request):
     """
     Test writing API diffs in JSON format using the command-line interface.
     """
     api_diff = APIDiff.from_files(api_dump_file, api_dump_new_file)
-    cli("diff", api_dump_file, api_dump_new_file, "--json")
-    captured = capfd.readouterr()
-    api_diff_json = json.loads(captured.out)
+    api_diff_file = request.path.parent / "test_diff.tmp"
+    cli("diff", api_dump_file, api_dump_new_file, "-o", api_diff_file)
+    api_diff_json = json.load(api_diff_file.open("rt"))
     assert api_diff._old_path == Path(api_diff_json["old_dump"])
     assert api_diff._new_path == Path(api_diff_json["new_dump"])
     assert api_diff._old_versions["api_ref"] == api_diff_json["old_versions"]["api_ref"]

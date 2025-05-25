@@ -31,17 +31,20 @@ def diff(args):
     # Load API diff
     diff = APIDiff.from_files(args.old_dump, args.new_dump)
 
-    file = sys.stdout if args.output is None else args.output.open("wt")
+    if args.output is None:
 
-    if args.json:
+        # Print API diff as text to standard output
+        diff.print_as_text()
 
-        # Print API diff as JSON to the given --output file
-        diff.print_as_json(file)
+    elif args.text:
+
+        # Print API diff as text to the given --output file
+        diff.print_as_text(args.output.open("wt"))
 
     else:
 
-        # Print API diff as text to the given --output file
-        diff.print_as_text(file)
+        # Print API diff as JSON to the given --output file
+        diff.print_as_json(args.output.open("wt"))
 
 
 def cli(*argv):
@@ -71,7 +74,7 @@ def cli(*argv):
         "-o", "--output", type=Path, default=None, help="Output API diff to this file"
     )
     parser_diff.add_argument(
-        "-j", "--json", action="store_true", help="Output API diff in JSON format"
+        "-t", "--text", action="store_true", help="Output API diff in text format"
     )
     parser_diff.add_argument(
         "old_dump", type=Path, help="File containing dump of old API"
