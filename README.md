@@ -6,6 +6,10 @@ different versions of the same module.
 
 ## Command-line interface
 
+```bash
+$ py-api-dumper --help
+```
+
 * To dump the public API of a module `mymod`:
 
   ```bash
