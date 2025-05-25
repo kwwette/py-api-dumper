@@ -1,3 +1,4 @@
+import contextlib
 import importlib
 import importlib.metadata
 import inspect
@@ -12,6 +13,16 @@ __author__ = "Karl Wette"
 __version__ = "1.0"
 
 APIDumpType = TypeVar("APIDumpType", bound="APIDump")
+
+
+def _import_module(module_name):
+
+    # Import module, silencing any printed output
+    with contextlib.redirect_stdout(None):
+        with contextlib.redirect_stderr(None):
+            module = importlib.import_module(module_name)
+
+    return module
 
 
 class APIDump:
@@ -65,7 +76,7 @@ class APIDump:
             if isinstance(module_or_name, ModuleType):
                 module = module_or_name
             else:
-                module = importlib.import_module(module_or_name)
+                module = _import_module(module_or_name)
 
             # Save module
             if module.__name__ not in all_modules:
@@ -91,7 +102,7 @@ class APIDump:
                     continue
 
                 # Load submodule
-                submodule = importlib.import_module(submodule_info.name)
+                submodule = _import_module(submodule_info.name)
 
                 # Save submodule
                 if submodule.__name__ not in all_modules:
