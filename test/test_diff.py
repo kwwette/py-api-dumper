@@ -405,13 +405,13 @@ def test_diff_cli_json(api_dump_file, api_dump_new_file, request):
     api_diff_file = request.path.parent / "test_diff.tmp"
     cli("diff", api_dump_file, api_dump_new_file, "-o", api_diff_file)
     api_diff_json = json.load(api_diff_file.open("rt"))
-    assert api_diff._old_path == Path(api_diff_json["old_dump"])
-    assert api_diff._new_path == Path(api_diff_json["new_dump"])
-    assert api_diff._old_modules["api_ref"] == api_diff_json["old_modules"]["api_ref"]
-    assert api_diff._new_modules["api_ref"] == api_diff_json["new_modules"]["api_ref"]
-    assert api_diff._removed == set(
+    assert api_diff.old_dump_file == Path(api_diff_json["old_dump"])
+    assert api_diff.new_dump_file == Path(api_diff_json["new_dump"])
+    assert api_diff.old_modules["api_ref"] == api_diff_json["old_modules"]["api_ref"]
+    assert api_diff.new_modules["api_ref"] == api_diff_json["new_modules"]["api_ref"]
+    assert api_diff.removed == set(
         tuple(tuple(e) for e in entry) for entry in api_diff_json["removed"]
     )
-    assert api_diff._added == set(
+    assert api_diff.added == set(
         tuple(tuple(e) for e in entry) for entry in api_diff_json["added"]
     )

@@ -7,7 +7,7 @@ import pkgutil
 import sys
 from pathlib import Path
 from types import ModuleType
-from typing import List, Optional, TextIO, Tuple, Type, TypeVar, Union
+from typing import Dict, List, Optional, TextIO, Tuple, Type, TypeVar, Union
 
 __author__ = "Karl Wette"
 __version__ = "1.2"
@@ -308,7 +308,30 @@ APIDiffType = TypeVar("APIDiffType", bound="APIDiff")
 class APIDiff:
     """
     Show the differences between two Python public API dumps.
+
+    Attributes:
+        old_dump_file (Path):
+            File containing dump of the old public API.
+        old_modules (Dict[str, Dict[str, str]]):
+            Information on modules in the old public API.
+        new_dump_file (Path):
+            File containing dump of the new public API.
+        new_modules (Dict[str, Dict[str, str]]):
+            Information on modules in the new public API.
+        removed (frozenset):
+            API entries removed from the new API that remain in the old API.
+        added (frozenset):
+            API entries removed from the old API that remain in the new API.
     """
+
+    old_dump_file: Path
+    old_modules: Dict[str, Dict[str, str]]
+
+    new_dump_file: Path
+    new_modules: Dict[str, Dict[str, str]]
+
+    removed: frozenset
+    added: frozenset
 
     def __init__(
         self,
@@ -325,29 +348,31 @@ class APIDiff:
                 Dump of the new public API.
         """
 
-        self._old_modules = old._modules
-        self._old_path = old._file_path
+        self.old_dump_file = old._file_path
+        self.old_modules = old._modules
 
-        self._new_modules = new._modules
-        self._new_path = new._file_path
-
-        # Entries added to `new` that are not in `old`
-        self._added = new._api - old._api
+        self.new_dump_file = new._file_path
+        self.new_modules = new._modules
 
         # Entries removed from `new` that remain in `old`
-        self._removed = old._api - new._api
+        self.removed = frozenset(old._api - new._api)
+
+        # Entries added to `new` that are not in `old`
+        self.added = frozenset(new._api - old._api)
 
     @classmethod
     def from_files(
-        cls: Type[APIDiffType], old_path: Union[Path, str], new_path: Union[Path, str]
+        cls: Type[APIDiffType],
+        old_dump_file: Union[Path, str],
+        new_dump_file: Union[Path, str],
     ) -> APIDiffType:
         """
         Differences between two Python public API dumps loaded from files.
 
         Args:
-            old_path (Union[Path, str]):
+            old_dump_file (Union[Path, str]):
                 Name of file containing dump of the old public API.
-            new_path (Union[Path, str]):
+            new_dump_file (Union[Path, str]):
                 Name of file containing dump of the new public API.
 
         Returns:
@@ -355,8 +380,8 @@ class APIDiff:
         """
 
         # Load dumps from files
-        old = APIDump.load_from_file(old_path)
-        new = APIDump.load_from_file(new_path)
+        old = APIDump.load_from_file(old_dump_file)
+        new = APIDump.load_from_file(new_dump_file)
 
         # Create instance
         inst = cls(old, new)
@@ -367,7 +392,7 @@ class APIDiff:
         """
         Return True if there are no differences, False otherwise.
         """
-        return len(self._added) == 0 and len(self._removed) == 0
+        return len(self.added) == 0 and len(self.removed) == 0
 
     def print_as_text(self, file: Optional[TextIO] = None) -> None:
         """
@@ -381,8 +406,8 @@ class APIDiff:
 
         # Print file names and versions
         for prefix, file_path, modules in (
-            ("---", self._old_path, self._old_modules),
-            ("+++", self._new_path, self._new_modules),
+            ("---", self.old_dump_file, self.old_modules),
+            ("+++", self.new_dump_file, self.new_modules),
         ):
             print(
                 prefix,
@@ -396,7 +421,7 @@ class APIDiff:
             )
 
         # Print API entries added and removed
-        for prefix, entries in (("-", self._removed), ("+", self._added)):
+        for prefix, entries in (("-", self.removed), ("+", self.added)):
             stack: List[Tuple] = []
             for entry in sorted(entries):
 
@@ -429,12 +454,12 @@ class APIDiff:
 
         # Assemble file content
         content = {
-            "old_dump": str(self._old_path),
-            "new_dump": str(self._new_path),
-            "old_modules": self._old_modules,
-            "new_modules": self._new_modules,
-            "removed": list(sorted(self._removed)),
-            "added": list(sorted(self._added)),
+            "old_dump": str(self.old_dump_file),
+            "new_dump": str(self.new_dump_file),
+            "old_modules": self.old_modules,
+            "new_modules": self.new_modules,
+            "removed": list(sorted(self.removed)),
+            "added": list(sorted(self.added)),
         }
 
         # Save to file as JSON
