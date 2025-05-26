@@ -7,7 +7,7 @@ import pkgutil
 import sys
 from pathlib import Path
 from types import ModuleType
-from typing import Dict, List, Optional, TextIO, Tuple, Type, TypeVar, Union
+from typing import Dict, FrozenSet, List, Optional, TextIO, Tuple, Type, TypeVar, Union
 
 __author__ = "Karl Wette"
 __version__ = "1.2"
@@ -28,15 +28,29 @@ def _import_module(module_name):
 class APIDump:
     """
     Dump the public API of a Python module and its members.
+
+    Attributes:
+        dump_file (Path):
+            File containing dump of the public API.
+        modules (Dict[str, Dict[str, str]]):
+            Information on modules in the public API.
     """
 
-    def __init__(self, *, api, modules, file_path=None):
+    dump_file: Path
+    modules: Dict[str, Dict[str, str]]
+
+    def __init__(self, *, dump_file=None, modules, api):
+        """x"""
+        self.dump_file = dump_file
+        self.modules = modules
         self._api = api
-        self._modules = modules
-        self._file_path = file_path
 
     def __eq__(self, other):
         return self._api == other._api
+
+    @property
+    def api(self) -> FrozenSet:
+        return frozenset(self._api)
 
     @classmethod
     def from_modules(
@@ -83,7 +97,7 @@ class APIDump:
                 all_modules[module.__name__] = module
 
             # Save module information:
-            module_info = self._modules[module.__name__] = dict()
+            module_info = self.modules[module.__name__] = dict()
 
             # - Save module version
             try:
@@ -262,7 +276,7 @@ class APIDump:
         file_path = Path(file_path)
 
         # Assemble file content
-        content = {"modules": self._modules, "api": list(sorted(self._api))}
+        content = {"modules": self.modules, "api": list(sorted(self._api))}
 
         # Save to file as JSON
         with file_path.open("wt") as file:
@@ -291,12 +305,12 @@ class APIDump:
 
         # Create instance
         inst = cls(
-            api=set(tuple(tuple(e) for e in entry) for entry in content["api"]),
+            dump_file=file_path,
             modules=dict(
                 (module, dict((k, v) for k, v in info.items()))
                 for module, info in content["modules"].items()
             ),
-            file_path=file_path,
+            api=set(tuple(tuple(e) for e in entry) for entry in content["api"]),
         )
 
         return inst
@@ -348,17 +362,17 @@ class APIDiff:
                 Dump of the new public API.
         """
 
-        self.old_dump_file = old._file_path
-        self.old_modules = old._modules
+        self.old_dump_file = old.dump_file
+        self.old_modules = old.modules
 
-        self.new_dump_file = new._file_path
-        self.new_modules = new._modules
+        self.new_dump_file = new.dump_file
+        self.new_modules = new.modules
 
         # Entries removed from `new` that remain in `old`
-        self.removed = frozenset(old._api - new._api)
+        self.removed = frozenset(old.api - new.api)
 
         # Entries added to `new` that are not in `old`
-        self.added = frozenset(new._api - old._api)
+        self.added = frozenset(new.api - old.api)
 
     @classmethod
     def from_files(
