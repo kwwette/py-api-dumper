@@ -30,13 +30,13 @@ class APIDump:
     Dump the public API of a Python module and its members.
     """
 
-    def __init__(self, *, api, versions, file_path=None):
+    def __init__(self, *, api, modules, file_path=None):
         self._api = api
-        self._versions = versions
+        self._modules = modules
         self._file_path = file_path
 
     def __eq__(self, other):
-        return self._api == other._api and self._versions == other._versions
+        return self._api == other._api
 
     @classmethod
     def from_modules(
@@ -54,7 +54,7 @@ class APIDump:
         """
 
         # Create instance
-        inst = cls(api=set(), versions=dict())
+        inst = cls(api=set(), modules=dict())
 
         # Load all modules
         all_modules = inst._load_all_modules(modules)
@@ -82,15 +82,25 @@ class APIDump:
             if module.__name__ not in all_modules:
                 all_modules[module.__name__] = module
 
-            # Save module version
+            # Save module information:
+            module_info = self._modules[module.__name__] = dict()
+
+            # - Save module version
             try:
-                module_version = importlib.metadata.version(module.__name__)
+                module_info["version"] = str(
+                    importlib.metadata.version(module.__name__)
+                )
             except importlib.metadata.PackageNotFoundError:
                 try:
-                    module_version = module.__version__
+                    module_info["version"] = str(module.__version__)
                 except AttributeError:
-                    module_version = None
-            self._versions[module.__name__] = module_version
+                    module_info["version"] = None
+
+            # - Save module path
+            try:
+                module_info["path"] = str(module.__file__)
+            except AttributeError:  # pragma: no cover
+                module_info["path"] = None
 
             # Walk submodules
             for submodule_info in pkgutil.walk_packages(
@@ -252,7 +262,7 @@ class APIDump:
         file_path = Path(file_path)
 
         # Assemble file content
-        content = {"versions": self._versions, "api": list(sorted(self._api))}
+        content = {"modules": self._modules, "api": list(sorted(self._api))}
 
         # Save to file as JSON
         with file_path.open("wt") as file:
@@ -282,8 +292,9 @@ class APIDump:
         # Create instance
         inst = cls(
             api=set(tuple(tuple(e) for e in entry) for entry in content["api"]),
-            versions=dict(
-                (module, version) for module, version in content["versions"].items()
+            modules=dict(
+                (module, dict((k, v) for k, v in info.items()))
+                for module, info in content["modules"].items()
             ),
             file_path=file_path,
         )
@@ -314,10 +325,10 @@ class APIDiff:
                 Dump of the new public API.
         """
 
-        self._old_versions = old._versions
+        self._old_modules = old._modules
         self._old_path = old._file_path
 
-        self._new_versions = new._versions
+        self._new_modules = new._modules
         self._new_path = new._file_path
 
         # Entries added to `new` that are not in `old`
@@ -369,17 +380,17 @@ class APIDiff:
         file = file or sys.stdout
 
         # Print file names and versions
-        for prefix, file_path, versions in (
-            ("---", self._old_path, self._old_versions),
-            ("+++", self._new_path, self._new_versions),
+        for prefix, file_path, modules in (
+            ("---", self._old_path, self._old_modules),
+            ("+++", self._new_path, self._new_modules),
         ):
             print(
                 prefix,
                 "/dev/null" if file_path is None else str(file_path),
                 " ".join(
-                    f"{module}={version}"
-                    for module, version in versions.items()
-                    if version is not None
+                    module + "=" + info["version"]
+                    for module, info in modules.items()
+                    if info["version"] is not None
                 ),
                 file=file,
             )
@@ -420,8 +431,8 @@ class APIDiff:
         content = {
             "old_dump": str(self._old_path),
             "new_dump": str(self._new_path),
-            "old_versions": self._old_versions,
-            "new_versions": self._new_versions,
+            "old_modules": self._old_modules,
+            "new_modules": self._new_modules,
             "removed": list(sorted(self._removed)),
             "added": list(sorted(self._added)),
         }
