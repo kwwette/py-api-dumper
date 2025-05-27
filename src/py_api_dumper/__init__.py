@@ -10,7 +10,7 @@ from types import ModuleType
 from typing import Dict, FrozenSet, List, Optional, TextIO, Tuple, Type, TypeVar, Union
 
 __author__ = "Karl Wette"
-__version__ = "1.2"
+__version__ = "2.0"
 
 APIDumpType = TypeVar("APIDumpType", bound="APIDump")
 
