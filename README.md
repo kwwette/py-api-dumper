@@ -1,7 +1,7 @@
 # Python API dumping and comparison tool
 
 Dumps the public API of a Python module and its members to a file, which can
-then be used to show the differences in the public between two dumps, e.g. of
+then be used to show differences in the public API between two dumps, e.g. of
 different versions of the same module.
 
 ## Command-line interface
