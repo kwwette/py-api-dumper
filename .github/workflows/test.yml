@@ -33,17 +33,24 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r requirements-dev.txt
+          python -m pip install ppqs
 
-      - name: Lint with pre-commit
+      - name: Init
         run: |
-          pre-commit install
-          pre-commit run -a
+          ppqs init
 
-      - name: Install with pip
+      - name: Lint
         run: |
-          pip install .
+          ppqs lint
 
-      - name: Test with pytest
+      - name: Build
         run: |
-          pytest
+          ppqs build
+
+      - name: Test
+        run: |
+          ppqs test
+
+      - name: Clean
+        run: |
+          ppqs clean
