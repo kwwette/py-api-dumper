@@ -43,8 +43,8 @@ def diff(args):
 
     else:
 
-        # Print API diff as JSON to the given --output file
-        diff.print_as_json(args.output.open("wt"))
+        # Save the API diff to the given --output file in JSON format
+        diff.save_as_json(args.output)
 
 
 def cli(*argv):

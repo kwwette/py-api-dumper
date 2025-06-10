@@ -83,6 +83,5 @@ from py_api_dumper import APIDump, APIDiff
   ```python
   diff = APIDiff.from_files("mymod-old.dump", "mymod-new.dump")
   diff.print_as_text()
-  with open("mymod.diff", as file):
-        diff.print_as_json(file)
+  diff.save_as_json("mymod.diff")
   ```

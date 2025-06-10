@@ -472,15 +472,15 @@ class APIDiff:
                     print(prefix + indent + entry_str, file=file)
                 stack.append(entry)
 
-    def print_as_json(self, file: Optional[TextIO] = None) -> None:
+    def save_as_json(self, file_path: Union[Path, str]) -> None:
         """
-        Print the API differences as JSON to a file.
+        Save the API differences to a file in JSON format.
 
         Args:
-            file (Optional[TextIO]):
-                File to print to (default: standard output).
+            file_path (Union[Path, str]):
+                Name of file to save to.
         """
-        file = file or sys.stdout
+        file_path = Path(file_path)
 
         # Assemble file content
         content = {
@@ -493,4 +493,5 @@ class APIDiff:
         }
 
         # Save to file as JSON
-        json.dump(content, file)
+        with file_path.open("wt", encoding="utf-8") as file:
+            json.dump(content, file, sort_keys=True)
