@@ -298,7 +298,6 @@ class APIDump:
         # Save to file as JSON
         with APIDump._open_dump_file(file_path, "wt") as file:
             json.dump(content, file)
-            file.write("\n")
 
     @classmethod
     def load_from_file(
@@ -495,4 +494,3 @@ class APIDiff:
 
         # Save to file as JSON
         json.dump(content, file)
-        file.write("\n")
