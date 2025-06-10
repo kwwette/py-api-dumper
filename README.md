@@ -6,20 +6,20 @@ different versions of the same module.
 
 ## Command-line interface
 
-```bash
+```
 $ py-api-dumper --help
 ```
 
 * To dump the public API of a module `mymod`:
 
-  ```bash
+  ```
   $ py-api-dumper dump -o mymod1.dump mymod
   ```
 
   `mymod1.dump` will record the public API of `mymod` in a reloadable format.
 
 * To print the API of `mymod` in text format:
-  ```bash
+  ```
   $ py-api-dumper dump mymod
   MODULE : mymod
       CLASS : myclass
@@ -32,7 +32,7 @@ $ py-api-dumper --help
   function, member variable, etc. in the public API.
 
 * To compare the API of `mymod` between different versions:
-  ```bash
+  ```
   $ py-api-dumper diff mymod-old.dump mymod-new.dump
   --- mymod-old.dump mymod=1.0
   +++ mymod-new.dump mymod=2.0
@@ -46,7 +46,7 @@ $ py-api-dumper --help
   and 2.0, an additional positional argument `b` had been added to the
   `__init__` method of the class `mymod.myclass`.
 
-  ```bash
+  ```
   $ py-api-dumper diff -o mymod.diff ...
   ```
 
