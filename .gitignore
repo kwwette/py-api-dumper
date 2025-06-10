@@ -2,6 +2,7 @@
 /dist
 /src/*.egg-info
 /test/*.tmp
+/test/*.tmp.gz
 /test/api_ref/*.o
 /test/api_ref/*.so
 __pycache__

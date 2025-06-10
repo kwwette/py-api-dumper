@@ -1,4 +1,5 @@
 import contextlib
+import gzip
 import importlib
 import importlib.metadata
 import inspect
@@ -265,6 +266,22 @@ class APIDump:
             entry_str = " : ".join(str(e) for e in entry[-1])
             print(indent + entry_str, file=file)
 
+    @staticmethod
+    def _open_dump_file(file_path, mode):
+
+        # Use UTF-8 encoding
+        encoding = "utf-8"
+
+        if file_path.suffix == ".gz":
+
+            # Open as gzip-compressed file
+            return gzip.open(file_path, mode, encoding=encoding)
+
+        else:
+
+            # Open as regular text file
+            return file_path.open(mode, encoding=encoding)
+
     def save_to_file(self, file_path: Union[Path, str]) -> None:
         """
         Save the API dump to a file in a reloadable format.
@@ -279,7 +296,7 @@ class APIDump:
         content = {"modules": self.modules, "api": list(sorted(self._api))}
 
         # Save to file as JSON
-        with file_path.open("wt") as file:
+        with APIDump._open_dump_file(file_path, "wt") as file:
             json.dump(content, file)
             file.write("\n")
 
@@ -300,7 +317,7 @@ class APIDump:
         file_path = Path(file_path)
 
         # Load from file as JSON
-        with file_path.open("rt") as file:
+        with APIDump._open_dump_file(file_path, "rt") as file:
             content = json.load(file)
 
         # Create instance

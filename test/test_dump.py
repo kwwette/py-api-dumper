@@ -59,12 +59,13 @@ def test_dump_file(request):
     assert api_dump == api_dump_from_file
 
 
-def test_dump_file_cli(request):
+@pytest.mark.parametrize("file_name", ["test_dump.tmp", "test_dump.tmp.gz"])
+def test_dump_file_cli(request, file_name):
     """
     Test saving and loading API dumps using the command-line interface.
     """
     api_dump = APIDump.from_modules(api_ref)
-    api_dump_file = request.path.parent / "test_dump.tmp"
+    api_dump_file = request.path.parent / file_name
     cli("dump", "--output", api_dump_file, "api_ref")
     api_dump_from_file = APIDump.load_from_file(api_dump_file)
     assert api_dump == api_dump_from_file
