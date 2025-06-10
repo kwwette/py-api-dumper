@@ -16,16 +16,6 @@ __version__ = "2.0.1"
 APIDumpType = TypeVar("APIDumpType", bound="APIDump")
 
 
-def _import_module(module_name):
-
-    # Import module, silencing any printed output
-    with contextlib.redirect_stdout(None):
-        with contextlib.redirect_stderr(None):
-            module = importlib.import_module(module_name)
-
-    return module
-
-
 class APIDump:
     """
     Dump the public API of a Python module and its members.
@@ -52,6 +42,16 @@ class APIDump:
     @property
     def api(self) -> FrozenSet:
         return frozenset(self._api)
+
+    @staticmethod
+    def _import_module(module_name):
+
+        # Import module, silencing any printed output
+        with contextlib.redirect_stdout(None):
+            with contextlib.redirect_stderr(None):
+                module = importlib.import_module(module_name)
+
+        return module
 
     @classmethod
     def from_modules(
@@ -91,7 +91,7 @@ class APIDump:
             if isinstance(module_or_name, ModuleType):
                 module = module_or_name
             else:
-                module = _import_module(module_or_name)
+                module = APIDump._import_module(module_or_name)
 
             # Save module
             if module.__name__ not in all_modules:
@@ -127,7 +127,7 @@ class APIDump:
                     continue
 
                 # Load submodule
-                submodule = _import_module(submodule_info.name)
+                submodule = APIDump._import_module(submodule_info.name)
 
                 # Save submodule
                 if submodule.__name__ not in all_modules:
