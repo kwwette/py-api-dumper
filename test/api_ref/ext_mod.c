@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2025 Karl Wette
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 #include <Python.h>
 
 /// public extension module ///
