@@ -36,7 +36,7 @@ repos:
         args: [--style=google, --allow-init-docstring=True, --skip-checking-raises=True]
 
   - repo: https://github.com/kwwette/auto-reuse.git
-    rev: v0.3
+    rev: v0.4
     hooks:
       - id: auto-reuse
 
