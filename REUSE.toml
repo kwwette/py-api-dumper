@@ -2,12 +2,12 @@ version = 1
 
 [[annotations]]
 path = [
+    ".github/**",
     ".gitignore",
     ".pre-commit-config.yaml",
     "MANIFEST.in",
     "README.md",
     "pyproject.toml",
-    ".github/**",
     "requirements-dev.txt",
     "test/api_ref/api_ref.txt",
 ]
