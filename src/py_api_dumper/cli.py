@@ -57,7 +57,8 @@ def cli(*argv):
     parser = argparse.ArgumentParser(
         description="Python API dumping and comparison tool"
     )
-    subparsers = parser.add_subparsers(help="sub-commands")
+    subparsers = parser.add_subparsers(dest="subcommand", help="sub-commands")
+    subparsers.required = True
     parser_dump = subparsers.add_parser(
         "dump", description="dump APIs", help="dump APIs"
     )
