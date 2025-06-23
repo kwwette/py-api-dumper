@@ -2,6 +2,9 @@
 #
 # SPDX-License-Identifier: MIT
 
+"""Python API dumping and comparison tool."""
+
+
 import contextlib
 import gzip
 import importlib
@@ -21,8 +24,7 @@ APIDumpType = TypeVar("APIDumpType", bound="APIDump")
 
 
 class APIDump:
-    """
-    Dump the public API of a Python module and its members.
+    """Dump the public API of a Python module and its members.
 
     Attributes:
         dump_file (Path):
@@ -35,7 +37,7 @@ class APIDump:
     modules: Dict[str, Dict[str, str]]
 
     def __init__(self, *, dump_file=None, modules, api):
-        """x"""
+        """Private constructor of an APIDump object."""
         self.dump_file = dump_file
         self.modules = modules
         self._api = api
@@ -45,6 +47,7 @@ class APIDump:
 
     @property
     def api(self) -> FrozenSet:
+        """Return the Python modules' public API."""
         return frozenset(self._api)
 
     @staticmethod
@@ -61,8 +64,7 @@ class APIDump:
     def from_modules(
         cls: Type[APIDumpType], *modules: Union[ModuleType, str]
     ) -> APIDumpType:
-        """
-        Dump the public API of the given Python modules.
+        """Dump the public API of the given Python modules.
 
         Args:
             *modules (Union[ModuleType, str]):
@@ -254,8 +256,7 @@ class APIDump:
         self._add_api_entry(entry)
 
     def print_as_text(self, file: Optional[TextIO] = None) -> None:
-        """
-        Print the API dump as text to a file.
+        """Print the API dump as text to a file.
 
         Args:
             file (Optional[TextIO]):
@@ -287,8 +288,7 @@ class APIDump:
             return file_path.open(mode, encoding=encoding)
 
     def save_to_file(self, file_path: Union[Path, str]) -> None:
-        """
-        Save the API dump to a file in a reloadable format.
+        """Save the API dump to a file in a reloadable format.
 
         Args:
             file_path (Union[Path, str]):
@@ -307,8 +307,7 @@ class APIDump:
     def load_from_file(
         cls: Type[APIDumpType], file_path: Union[Path, str]
     ) -> APIDumpType:
-        """
-        Load an API dump from a file.
+        """Load an API dump from a file.
 
         Args:
             file_path (Union[Path, str]):
@@ -340,8 +339,7 @@ APIDiffType = TypeVar("APIDiffType", bound="APIDiff")
 
 
 class APIDiff:
-    """
-    Show the differences between two Python public API dumps.
+    """Show the differences between two Python public API dumps.
 
     Attributes:
         old_dump_file (Path):
@@ -372,8 +370,7 @@ class APIDiff:
         old: APIDump,
         new: APIDump,
     ):
-        """
-        Differences between two Python public API dumps.
+        """Differences between two Python public API dumps.
 
         Args:
             old (APIDump):
@@ -400,8 +397,7 @@ class APIDiff:
         old_dump_file: Union[Path, str],
         new_dump_file: Union[Path, str],
     ) -> APIDiffType:
-        """
-        Differences between two Python public API dumps loaded from files.
+        """Differences between two Python public API dumps loaded from files.
 
         Args:
             old_dump_file (Union[Path, str]):
@@ -423,14 +419,11 @@ class APIDiff:
         return inst
 
     def equal(self):
-        """
-        Return True if there are no differences, False otherwise.
-        """
+        """Return True if there are no differences, False otherwise."""
         return len(self.added) == 0 and len(self.removed) == 0
 
     def print_as_text(self, file: Optional[TextIO] = None) -> None:
-        """
-        Print the API differences as text to a file.
+        """Print the API differences as text to a file.
 
         Args:
             file (Optional[TextIO]):
@@ -477,8 +470,7 @@ class APIDiff:
                 stack.append(entry)
 
     def save_as_json(self, file_path: Union[Path, str]) -> None:
-        """
-        Save the API differences to a file in JSON format.
+        """Save the API differences to a file in JSON format.
 
         Args:
             file_path (Union[Path, str]):

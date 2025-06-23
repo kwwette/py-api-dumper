@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+"""Command-line parser."""
+
 import argparse
 import sys
 from pathlib import Path
@@ -9,7 +11,7 @@ from pathlib import Path
 from . import APIDiff, APIDump
 
 
-def dump(args):
+def _dump(args):
 
     # Dump module APIs
     dump = APIDump.from_modules(*args.modules)
@@ -30,7 +32,7 @@ def dump(args):
         dump.save_to_file(args.output)
 
 
-def diff(args):
+def _diff(args):
 
     # Load API diff
     diff = APIDiff.from_files(args.old_dump, args.new_dump)
@@ -52,6 +54,7 @@ def diff(args):
 
 
 def cli(*argv):
+    """Command-line parser entry point."""
 
     # Build command-line argument parser
     parser = argparse.ArgumentParser(
@@ -71,7 +74,7 @@ def cli(*argv):
     parser_dump.add_argument(
         "modules", type=str, nargs="+", help="Dump APIs of these modules"
     )
-    parser_dump.set_defaults(subcommand=dump)
+    parser_dump.set_defaults(subcommand=_dump)
     parser_diff = subparsers.add_parser(
         "diff", description="compare APIs", help="compare APIs"
     )
@@ -87,7 +90,7 @@ def cli(*argv):
     parser_diff.add_argument(
         "new_dump", type=Path, help="File containing dump of new API"
     )
-    parser_diff.set_defaults(subcommand=diff)
+    parser_diff.set_defaults(subcommand=_diff)
 
     # Parse command line
     argv = [str(a) for a in (argv or sys.argv[1:] or ["--help"])]
