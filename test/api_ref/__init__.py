@@ -2,10 +2,10 @@
 #
 # SPDX-License-Identifier: MIT
 
+"""Public module."""
+
 import sys
 from typing import List, Optional, Union
-
-### public module ###
 
 # public members
 v1 = 3
@@ -18,20 +18,23 @@ v3 = sys
 _v4 = "private"
 
 
-# public functions
 def F1(a):
+    """Public function."""
     pass
 
 
 def F2(a, b, *c, **d):
+    """Public function."""
     pass
 
 
 def F3(a: int, b: bool = False, **d) -> str:
+    """Public function."""
     return ""
 
 
 def F4(a: Union[List, str], b: Optional[bool] = False) -> None:
+    """Public function."""
     pass
 
 

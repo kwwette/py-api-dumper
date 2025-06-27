@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+"""Build extension module `api_ref.ext_mod` needed for tests."""
+
 from setuptools import Extension, setup
 
 setup(

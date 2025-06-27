@@ -2,14 +2,14 @@
 #
 # SPDX-License-Identifier: MIT
 
+"""Public module."""
+
 # import from another module (considered private)
 from . import F3
 
-### public module ###
 
-
-# public classes
 class C1:
+    """Public class."""
 
     # public fields
     f1 = 1.2
@@ -19,33 +19,34 @@ class C1:
     _f3 = F3
     _v = 1
 
-    # public static methods
     @staticmethod
     def help():
-        pass
+        """Public static method."""
 
-    # public class methods
     @classmethod
     def from_args(cls, z):
+        """Public class method."""
         return cls(z)
 
-    # constructor (considered public)
     def __init__(self, x, *y):
+        """Constructor (considered public)."""
         pass
 
-    # public methods
     def M1(self, z):
+        """Public method."""
         pass
 
     def M2(self, z, *, u, v=0):
+        """Public method."""
         pass
 
     def M3(self, w: int, /, x: str, y: float = 0, z: float = 1):
+        """Public method."""
         pass
 
-    # public properties
     @property
     def v(self):
+        """Public property."""
         return self._v
 
     @v.setter
@@ -56,15 +57,18 @@ class C1:
     def _M4(self):
         pass
 
-    # public nested class
     class C2:
+        """Public nested class."""
+
         g1 = 9
         _g2 = 4
 
         def __init__(self, g, h=True):
+            """Constructor (considered public)."""
             pass
 
         def N1(self, gg, *hh):
+            """Public method."""
             pass
 
     # private nested class

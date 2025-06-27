@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+"""Configure pytest."""
+
 import shutil
 import sys
 from pathlib import Path
@@ -12,9 +14,7 @@ import pytest
 
 @pytest.hookimpl
 def pytest_sessionstart(session):
-    """
-    Build extension module `api_ref.ext_mod` needed for tests.
-    """
+    """Build extension module `api_ref.ext_mod` needed for tests."""
     w = shutil.get_terminal_size().columns
     print(" build test extension module ".center(w, "-"))
     sys.stdout.flush()

@@ -2,6 +2,9 @@
 #
 # SPDX-License-Identifier: MIT
 
+"""Test API diffs."""
+
+
 import io
 import json
 import textwrap
@@ -16,27 +19,21 @@ from py_api_dumper.cli import cli
 
 @pytest.fixture
 def api_dump(monkeypatch):
-    """
-    Return API dump of `api_ref`.
-    """
+    """Return API dump of `api_ref`."""
     monkeypatch.setattr(api_ref, "__version__", "0.1", raising=False)
     return APIDump.from_modules(api_ref)
 
 
 @pytest.fixture
 def api_dump_file(api_dump, request):
-    """
-    Write API dump of `api_ref` to a file.
-    """
+    """Write API dump of `api_ref` to a file."""
     api_dump_file = request.path.parent / "test_dump.tmp"
     api_dump.save_to_file(api_dump_file)
     return api_dump_file
 
 
 def _check_diff(api_diff, expected):
-    """
-    Check diff text is as expected.
-    """
+    """Check API diff text is as expected."""
     api_diff_text = io.StringIO()
     api_diff.print_as_text(api_diff_text)
     expected = textwrap.dedent(expected).lstrip().replace("    ", "\t")
@@ -44,9 +41,7 @@ def _check_diff(api_diff, expected):
 
 
 def test_diff_same(api_dump, monkeypatch):
-    """
-    Test for no diff.
-    """
+    """Test for no API diff."""
     api_diff = APIDiff(api_dump, api_dump)
     assert api_diff.equal()
     _check_diff(
@@ -59,9 +54,7 @@ def test_diff_same(api_dump, monkeypatch):
 
 
 def test_diff_added_member(api_dump, monkeypatch):
-    """
-    Test diff with added member.
-    """
+    """Test API diff with added member."""
     monkeypatch.setattr(api_ref, "__version__", "0.2", raising=False)
     monkeypatch.setattr(api_ref, "new1", 42, raising=False)
     api_dump_new = APIDump.from_modules(api_ref)
@@ -79,9 +72,7 @@ def test_diff_added_member(api_dump, monkeypatch):
 
 
 def test_diff_removed_member(api_dump, monkeypatch):
-    """
-    Test diff with removed member.
-    """
+    """Test API diff with removed member."""
     monkeypatch.setattr(api_ref, "__version__", "0.2", raising=False)
     monkeypatch.delattr(api_ref.pub_mod, "d1")
     api_dump_new = APIDump.from_modules(api_ref)
@@ -100,9 +91,7 @@ def test_diff_removed_member(api_dump, monkeypatch):
 
 
 def test_diff_added_function(api_dump, monkeypatch):
-    """
-    Test diff with added function.
-    """
+    """Test API diff with added function."""
     monkeypatch.setattr(api_ref, "__version__", "0.2", raising=False)
 
     def newF(x):
@@ -126,9 +115,7 @@ def test_diff_added_function(api_dump, monkeypatch):
 
 
 def test_diff_added_function_argument(api_dump, monkeypatch):
-    """
-    Test diff with added function argument.
-    """
+    """Test API diff with added function argument."""
     monkeypatch.setattr(api_ref, "__version__", "0.2", raising=False)
 
     def F1(a, b):
@@ -152,9 +139,7 @@ def test_diff_added_function_argument(api_dump, monkeypatch):
 
 
 def test_diff_removed_function(api_dump, monkeypatch):
-    """
-    Test diff with removed function.
-    """
+    """Test API diff with removed function."""
     monkeypatch.setattr(api_ref, "__version__", "0.2", raising=False)
     monkeypatch.delattr(api_ref, "F4")
     api_dump_new = APIDump.from_modules(api_ref)
@@ -174,9 +159,7 @@ def test_diff_removed_function(api_dump, monkeypatch):
 
 
 def test_diff_added_class(api_dump, monkeypatch):
-    """
-    Test diff with added class.
-    """
+    """Test API diff with added class."""
     monkeypatch.setattr(api_ref, "__version__", "0.2", raising=False)
 
     class newC:
@@ -210,9 +193,7 @@ def test_diff_added_class(api_dump, monkeypatch):
 
 
 def test_diff_removed_class(api_dump, monkeypatch):
-    """
-    Test diff with removed class.
-    """
+    """Test API diff with removed class."""
     monkeypatch.setattr(api_ref, "__version__", "0.2", raising=False)
     monkeypatch.delattr(api_ref.pub_mod.C1, "C2")
     api_dump_new = APIDump.from_modules(api_ref)
@@ -241,9 +222,7 @@ def test_diff_removed_class(api_dump, monkeypatch):
 
 
 def test_diff_added_method(api_dump, monkeypatch):
-    """
-    Test diff with added method.
-    """
+    """Test API diff with added method."""
     monkeypatch.setattr(api_ref, "__version__", "0.2", raising=False)
 
     def newM(self, y=False):
@@ -270,9 +249,7 @@ def test_diff_added_method(api_dump, monkeypatch):
 
 
 def test_diff_removed_method(api_dump, monkeypatch):
-    """
-    Test diff with removed method.
-    """
+    """Test API diff with removed method."""
     monkeypatch.setattr(api_ref, "__version__", "0.2", raising=False)
     monkeypatch.delattr(api_ref.pub_mod.C1, "M1")
     api_dump_new = APIDump.from_modules(api_ref)
@@ -295,9 +272,7 @@ def test_diff_removed_method(api_dump, monkeypatch):
 
 @pytest.fixture
 def api_dump_new(monkeypatch):
-    """
-    Return API dump of `api_ref` with lots of changes.
-    """
+    """Return API dump of `api_ref` with lots of changes."""
     monkeypatch.setattr(api_ref, "__version__", "1.0", raising=False)
 
     def newF(x):
@@ -330,18 +305,14 @@ def api_dump_new(monkeypatch):
 
 @pytest.fixture
 def api_dump_new_file(api_dump_new, request):
-    """
-    Write API dump of `api_ref` with lots of changes to a file.
-    """
+    """Write API dump of `api_ref` with lots of changes to a file."""
     api_dump_new_file = request.path.parent / "test_dump_new.tmp"
     api_dump_new.save_to_file(api_dump_new_file)
     return api_dump_new_file
 
 
 def test_diff_cli(api_dump_file, api_dump_new_file, request, monkeypatch, capfd):
-    """
-    Test comparing API dumps using the command-line interface.
-    """
+    """Test comparing API dumps using the command-line interface."""
     wd = request.path.parent
     monkeypatch.chdir(wd)
     cli("diff", api_dump_file.relative_to(wd), api_dump_new_file.relative_to(wd))
@@ -402,9 +373,7 @@ def test_diff_cli(api_dump_file, api_dump_new_file, request, monkeypatch, capfd)
 
 
 def test_diff_cli_json(api_dump_file, api_dump_new_file, request):
-    """
-    Test writing API diffs in JSON format using the command-line interface.
-    """
+    """Test writing API diffs in JSON format using the command-line interface."""
     api_diff = APIDiff.from_files(api_dump_file, api_dump_new_file)
     api_diff_file = request.path.parent / "test_diff.tmp"
     cli("diff", api_dump_file, api_dump_new_file, "-o", api_diff_file)
