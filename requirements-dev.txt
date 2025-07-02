@@ -4,3 +4,4 @@ pre-commit>=3.7
 pytest-cov>=2.0
 pytest>=6.0
 setuptools>=64.0
+twine>=6.1
