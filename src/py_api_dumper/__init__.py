@@ -14,8 +14,21 @@ import json
 import pkgutil
 import sys
 from pathlib import Path
-from types import ModuleType
-from typing import Dict, FrozenSet, List, Optional, TextIO, Tuple, Type, TypeVar, Union
+from types import ModuleType, NoneType
+from typing import (
+    Dict,
+    FrozenSet,
+    List,
+    Optional,
+    Set,
+    TextIO,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
+)
 
 __author__ = "Karl Wette"
 __version__ = "3.0.2"
@@ -201,6 +214,53 @@ class APIDump:
                 # Dump everything else
                 self._dump_member(prefix, member_name, member)
 
+    @staticmethod
+    def _type_to_str_fmt_type(t):
+
+        # Format a type using its fully qualified name
+        m = t.__module__
+        n = t.__qualname__
+        if m is not None and m != "builtins":
+            return m + "." + n
+        else:
+            return n
+
+    @staticmethod
+    def _type_to_str(t):
+
+        # Always format NoneType as `None`
+        if t == NoneType or isinstance(t, NoneType):
+            return str(None)
+
+        # Always format these types the same as the first type
+        for tt in (
+            (tuple, Tuple),
+            (list, List),
+            (dict, Dict),
+            (set, Set),
+            (frozenset, FrozenSet),
+        ):
+            if t in tt:
+                return tt[0].__qualname__
+
+        # Always format `typing` expressions as `origin[args, ...]`
+        origin = get_origin(t)
+        if origin is not None:
+            s = APIDump._type_to_str_fmt_type(origin)
+            args = get_args(t)
+            if len(args) > 0:
+                s += "[" + ", ".join(APIDump._type_to_str(a) for a in get_args(t)) + "]"
+            return s
+
+        # Format all other types
+        if isinstance(t, type):
+            return APIDump._type_to_str_fmt_type(t)
+
+        # Should never get here...
+        if True:  # pragma: no cover
+            msg = f"cannot format this type: {t}, type={type(t)}, get_origin={get_origin(t)}"
+            raise TypeError(msg)
+
     def _dump_function(self, prefix, fun_type, fun_name, fun):
 
         # Try to get function signature
@@ -212,7 +272,7 @@ class APIDump:
         # Add function entry
         if sig is not None:
             if sig.return_annotation is not sig.empty:
-                return_type = str(sig.return_annotation)
+                return_type = APIDump._type_to_str(sig.return_annotation)
             else:
                 return_type = "no-return-type"
             func_entry = prefix + [(fun_type, fun_name, return_type)]
@@ -225,7 +285,7 @@ class APIDump:
             n_req_arg = 0
             for n, par in enumerate(sig.parameters.values()):
                 if par.annotation is not par.empty:
-                    par_type = str(par.annotation)
+                    par_type = APIDump._type_to_str(par.annotation)
                 else:
                     par_type = "no-type"
                 if par.default is not par.empty or par.kind in (

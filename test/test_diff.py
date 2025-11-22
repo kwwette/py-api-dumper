@@ -152,8 +152,8 @@ def test_diff_removed_function(api_dump, monkeypatch):
         +++ /dev/null api_ref=0.2
         -MODULE : api_ref
         -    FUNCTION : F4 : None
-        -        OPTIONAL : b : typing.Optional[bool]
-        -        REQUIRED : 0 : a : typing.Union[typing.List, str]
+        -        OPTIONAL : b : typing.Union[bool, None]
+        -        REQUIRED : 0 : a : typing.Union[list, str]
         """,
     )
 
@@ -332,8 +332,8 @@ def test_diff_cli(api_dump_file, api_dump_new_file, request, monkeypatch, capfd)
     +++ test_dump_new.tmp api_ref=1.0
     -MODULE : api_ref
     -	FUNCTION : F4 : None
-    -		OPTIONAL : b : typing.Optional[bool]
-    -		REQUIRED : 0 : a : typing.Union[typing.List, str]
+    -		OPTIONAL : b : typing.Union[bool, None]
+    -		REQUIRED : 0 : a : typing.Union[list, str]
     -	MODULE : pub_mod
     -		CLASS : C1
     -			CLASS : C2

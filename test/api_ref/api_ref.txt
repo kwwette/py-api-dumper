@@ -6,13 +6,13 @@ MODULE : api_ref
 		OPTIONAL : d : no-type
 		REQUIRED : 0 : a : no-type
 		REQUIRED : 1 : b : no-type
-	FUNCTION : F3 : <class 'str'>
-		OPTIONAL : b : <class 'bool'>
+	FUNCTION : F3 : str
+		OPTIONAL : b : bool
 		OPTIONAL : d : no-type
-		REQUIRED : 0 : a : <class 'int'>
+		REQUIRED : 0 : a : int
 	FUNCTION : F4 : None
-		OPTIONAL : b : typing.Optional[bool]
-		REQUIRED : 0 : a : typing.Union[typing.List, str]
+		OPTIONAL : b : typing.Union[bool, None]
+		REQUIRED : 0 : a : typing.Union[list, str]
 	MEMBER : v1 : int
 	MEMBER : v2 : str
 	MODULE : ext_mod
@@ -44,11 +44,11 @@ MODULE : api_ref
 				REQUIRED : 1 : z : no-type
 				REQUIRED : 2 : u : no-type
 			FUNCTION : M3 : no-return-type
-				OPTIONAL : y : <class 'float'>
-				OPTIONAL : z : <class 'float'>
+				OPTIONAL : y : float
+				OPTIONAL : z : float
 				REQUIRED : 0 : self : no-type
-				REQUIRED : 1 : w : <class 'int'>
-				REQUIRED : 2 : x : <class 'str'>
+				REQUIRED : 1 : w : int
+				REQUIRED : 2 : x : str
 			FUNCTION : __init__ : no-return-type
 				OPTIONAL : y : no-type
 				REQUIRED : 0 : self : no-type
