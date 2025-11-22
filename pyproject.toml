@@ -4,7 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "py-api-dumper"
-version = "4.0.0"
 description = "Python API dumping and comparison tool"
 authors = [
     { name = "Karl Wette", email = "karl.wette@anu.edu.au" },
@@ -17,6 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
+dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/kwwette/py-api-dumper"
@@ -24,6 +24,9 @@ Issues = "https://github.com/kwwette/py-api-dumper/issues"
 
 [project.scripts]
 py-api-dumper = "py_api_dumper.cli:cli"
+
+[tool.setuptools.dynamic]
+version = {attr = "py_api_dumper.__version__"}
 
 [tool.ruff]
 fix = true
