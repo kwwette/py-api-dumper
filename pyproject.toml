@@ -9,7 +9,7 @@ description = "Python API dumping and comparison tool"
 authors = [
     { name = "Karl Wette", email = "karl.wette@anu.edu.au" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSES/MIT.txt"]
