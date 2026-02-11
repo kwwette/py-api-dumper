@@ -4,7 +4,6 @@
 
 """Python API dumping and comparison tool."""
 
-
 import contextlib
 import gzip
 import importlib

@@ -4,7 +4,6 @@
 
 """Test API diffs."""
 
-
 import io
 import json
 import textwrap
