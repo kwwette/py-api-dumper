@@ -171,6 +171,7 @@ class APIDump:
 
         # Iterate over struct members
         members = inspect.getmembers(struct)
+        module_name_with_dot = module.__name__ + "."
         for member_name, member in members:
 
             # Exclude any modules
@@ -182,10 +183,24 @@ class APIDump:
             if member_name.startswith("_") and member_name != "__init__":
                 continue
 
-            # Exclude any members defined in another module
-            # - this should catch any `import`ed members
-            if hasattr(member, "__module__") and member.__module__ != module.__name__:
-                continue
+            if isinstance(getattr(member, "__module__", None), str):
+
+                # Exclude any members defined in another module UNLESS that module is a private child module
+                # e.g. in module "amod":
+                # - exclude members from "anothermod"
+                # - exclude members from "amod.submod"
+                # - INCLUDE members from "amod._privmod"
+                member_module_with_dot = member.__module__ + "."
+                if member_module_with_dot == module_name_with_dot:
+                    import_member = True
+                elif member_module_with_dot.startswith(module_name_with_dot):
+                    import_member = (
+                        member_module_with_dot[len(module_name_with_dot)] == "_"
+                    )
+                else:
+                    import_member = False
+                if not import_member:
+                    continue
 
             # Dump classes
             if inspect.isclass(member):

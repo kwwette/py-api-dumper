@@ -7,6 +7,11 @@
 import sys
 from typing import List, Optional, Union
 
+from other_mod import G1  # noqa: F401 - import from another module (considered private)
+
+from ._priv_mod import F3  # noqa: F401 - import private members into public API
+from .pub_mod import C1  # noqa: F401 - import from a child module (considered private)
+
 # public members
 v1 = 3
 v2 = "hello"
@@ -26,11 +31,6 @@ def F1(a):
 def F2(a, b, *c, **d):
     """Public function."""
     pass
-
-
-def F3(a: int, b: bool = False, **d) -> str:
-    """Public function."""
-    return ""
 
 
 def F4(a: Union[List, str], b: Optional[bool] = False) -> None:

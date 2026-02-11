@@ -5,7 +5,7 @@
 """Public module."""
 
 # import from another module (considered private)
-from . import F3
+from other_mod import G1
 
 
 class C1:
@@ -16,7 +16,7 @@ class C1:
     f2 = "there"
 
     # private fields
-    _f3 = F3
+    _f3 = G1
     _v = 1
 
     @staticmethod
