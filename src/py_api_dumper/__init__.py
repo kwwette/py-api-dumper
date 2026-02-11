@@ -30,7 +30,7 @@ from typing import (
 )
 
 __author__ = "Karl Wette"
-__version__ = "4.0.1"
+__version__ = "4.1"
 
 APIDumpType = TypeVar("APIDumpType", bound="APIDump")
 
