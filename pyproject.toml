@@ -54,6 +54,7 @@ skip-checking-raises = true
 
 [tool.pytest.ini_options]
 minversion = "6.0"
+pythonpath = ["src"]
 addopts = "--cov=py_api_dumper --cov-report=term-missing --cov-fail-under=100"
 testpaths = ["test"]
 
