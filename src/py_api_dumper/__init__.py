@@ -32,7 +32,83 @@ from typing import (
 __author__ = "Karl Wette"
 __version__ = "4.1.1"
 
+APIFilterType = TypeVar("APIFilterType", bound="APIFilter")
 APIDumpType = TypeVar("APIDumpType", bound="APIDump")
+APIDiffType = TypeVar("APIDiffType", bound="APIDiff")
+
+
+class APIFilter:
+    """Filter out API entries before comparing API dumps."""
+
+    def __init__(self, *patt: tuple):
+        """API entry filter.
+
+        Args:
+            *patt (tuple): Partial tuples to match to API entry.
+        """
+        self._patt = patt
+
+    @classmethod
+    def from_str(cls: Type[APIFilterType], filter_str: str) -> APIFilterType:
+        """Create an API filter from a string.
+
+        Args:
+            filter_str (str):
+                String to parse into filter.
+
+        Returns:
+            APIFilterType: APIFilter instance.
+        """
+
+        def _to_int_or_str(c):
+            try:
+                return int(c)
+            except ValueError:
+                return c
+
+        return cls(
+            *tuple(
+                tuple(_to_int_or_str(c) for c in s.split(":"))
+                for s in filter_str.split(";")
+            )
+        )
+
+    def match(self, entry: tuple) -> bool:
+        """Return if the API filter matches the given entry.
+
+        Args:
+            entry (tuple):
+                API entry to match.
+
+        Returns:
+            bool: True for a match, False otherwise.
+        """
+
+        # Match fails if pattern is longer than entry
+        if len(self._patt) > len(entry):
+            return False
+
+        # Shift filter pattern across entry
+        for i in range(len(entry) - len(self._patt) + 1):
+
+            # Assume found unless determined otherwise
+            found = True
+            for j in range(len(self._patt)):
+
+                # Match fails if pattern element is longer than entry element
+                if len(self._patt[j]) > len(entry[i + j]):
+                    found = False
+                    break
+
+                # Match fails if first entry elements do not match patterm
+                if entry[i + j][0 : len(self._patt[j])] != self._patt[j]:
+                    found = False
+                    break
+
+            if found:
+                return True
+
+        return False
 
 
 class APIDump:
@@ -408,8 +484,24 @@ class APIDump:
 
         return inst
 
+    def apply_ignore_filter(self, ignore_filters: List[APIFilterType]) -> "APIDump":
+        """Remove API entries that match filters.
 
-APIDiffType = TypeVar("APIDiffType", bound="APIDiff")
+        Args:
+            ignore_filters (List[APIFilterType]):
+                List of filters to apply.
+
+        Returns:
+            APIDump: filtered APIDump instance.
+        """
+
+        filtered_api = self._api
+        for f in ignore_filters:
+            filtered_api = set(e for e in filtered_api if not f.match(e))
+
+        return self.__class__(
+            dump_file=self.dump_file, modules=self.modules, api=filtered_api
+        )
 
 
 class APIDiff:
@@ -470,6 +562,7 @@ class APIDiff:
         cls: Type[APIDiffType],
         old_dump_file: Union[Path, str],
         new_dump_file: Union[Path, str],
+        ignore_filters: Optional[List[APIFilterType]] = None,
     ) -> APIDiffType:
         """Differences between two Python public API dumps loaded from files.
 
@@ -478,6 +571,8 @@ class APIDiff:
                 Name of file containing dump of the old public API.
             new_dump_file (Union[Path, str]):
                 Name of file containing dump of the new public API.
+            ignore_filters (Optional[List[APIFilterType]]):
+                Remove API entries that match filters.
 
         Returns:
             APIDiffType: APIDiff instance.
@@ -486,6 +581,11 @@ class APIDiff:
         # Load dumps from files
         old = APIDump.load_from_file(old_dump_file)
         new = APIDump.load_from_file(new_dump_file)
+
+        # Apply filters
+        if ignore_filters and len(ignore_filters) > 0:
+            old = old.apply_ignore_filter(ignore_filters)
+            new = new.apply_ignore_filter(ignore_filters)
 
         # Create instance
         inst = cls(old, new)

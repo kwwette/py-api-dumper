@@ -12,7 +12,7 @@ from pathlib import Path
 import api_ref
 import pytest
 
-from py_api_dumper import APIDiff, APIDump
+from py_api_dumper import APIDiff, APIDump, APIFilter
 from py_api_dumper.cli import cli
 
 
@@ -387,3 +387,12 @@ def test_diff_cli_json(api_dump_file, api_dump_new_file, request):
     assert api_diff.added == set(
         tuple(tuple(e) for e in entry) for entry in api_diff_json["added"]
     )
+
+
+def test_diff_ignore_filter(api_dump_file, api_dump_new_file, request):
+    """Test comparing API dumps with ignore filter."""
+    api_diff = APIDiff.from_files(
+        api_dump_file, api_dump_new_file, [APIFilter.from_str("CLASS:C1")]
+    )
+    assert len(api_diff.removed) == 4
+    assert len(api_diff.added) == 10

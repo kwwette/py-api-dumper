@@ -61,6 +61,29 @@ $ py-api-dumper --help
   * API entries which have been *added*, i.e. present in the new API but not in
     the old API (e.g. the `b` argument in the above example).
 
+* To filter out undesired entries from API dumps before comparison:
+  ```
+  $ py-api-dumper diff mymod-old.dump mymod-new.dump -i <filter>
+  ```
+  Given the following API:
+  ```
+  MODULE : mymod
+      CLASS : myclass
+          FUNCTION : __init__ : no-return-type
+              REQUIRED : 0 : x : int
+  ```
+  the following filters would ignore the given entries:
+  | `<filter>`                   | Ignore entries                             |
+  | ---------------------------- | ------------------------------------------ |
+  | `MODULE`                     | All modules                                |
+  | `MODULE:mymod`               | All modules named `mymod`                  |
+  | `CLASS`                      | All classes                                |
+  | `CLASS:myclass`              | All classes named `myclass`                |
+  | `MODULE:mymod;CLASS`         | All classes in modules named `mymod`       |
+  | `MODULE:mymod;CLASS:myclass` | Class `myclass` in module `mymod`          |
+  | `FUNCTION:__init__`          | All functions named `__init__`             |
+  | `CLASS;FUNCTION:__init__`    | All functioned named `__init__` in classes |
+
 ## Python interface
 
 ```python
@@ -84,4 +107,10 @@ from py_api_dumper import APIDump, APIDiff
   diff = APIDiff.from_files("mymod-old.dump", "mymod-new.dump")
   diff.print_as_text()
   diff.save_as_json("mymod.diff")
+  ```
+
+* To filter out undesired entries from API dumps before comparison:
+  ```python
+  filter = APIFilter(("CLASS", "myclass"))   # OR: APIFilter.from_str("CLASS:myclass")
+  diff = APIDiff.from_files("mymod-old.dump", "mymod-new.dump", filter)
   ```

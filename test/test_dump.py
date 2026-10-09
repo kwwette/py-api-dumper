@@ -9,7 +9,7 @@ from pathlib import Path
 import api_ref
 import pytest
 
-from py_api_dumper import APIDump
+from py_api_dumper import APIDump, APIFilter
 from py_api_dumper.cli import cli
 
 
@@ -44,6 +44,39 @@ def test_dump_module_cli(request):
     api_dump_text = request.path.parent / "test_dump.txt.tmp"
     cli("dump", "--output", api_dump_text, "--text", "api_ref")
     _compare_dumps(api_dump_text)
+
+
+@pytest.mark.parametrize(
+    "patt,n_filtered_entries",
+    [
+        [[("MEMBER", "d1")], 1],
+        [[("CLASS", "C1"), ("MEMBER", "f1")], 1],
+        [[("CLASS", "C1")], 35],
+        [[("MEMBER", "does-not-exist", "just-to-test", "long-filter")], 0],
+    ],
+)
+def test_dump_module_filter(request, patt, n_filtered_entries):
+    """Create API dump from module and apply filter."""
+    api_dump = APIDump.from_modules(api_ref)
+    n_api_entries_before = len(api_dump._api)
+    api_dump = api_dump.apply_ignore_filter([APIFilter(*patt)])
+    assert len(api_dump._api) == n_api_entries_before - n_filtered_entries
+
+
+@pytest.mark.parametrize(
+    "filter_str,n_filtered_entries",
+    [
+        ["MEMBER:d1", 1],
+        ["CLASS:C1;MEMBER:f1", 1],
+        ["CLASS:C1", 35],
+    ],
+)
+def test_dump_module_filter_str(request, filter_str, n_filtered_entries):
+    """Create API dump from module and apply filter created from string."""
+    api_dump = APIDump.from_modules(api_ref)
+    n_api_entries_before = len(api_dump._api)
+    api_dump = api_dump.apply_ignore_filter([APIFilter.from_str(filter_str)])
+    assert len(api_dump._api) == n_api_entries_before - n_filtered_entries
 
 
 def test_dump_file(request):

@@ -8,7 +8,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from . import APIDiff, APIDump
+from . import APIDiff, APIDump, APIFilter
 
 
 def _dump(args):
@@ -35,7 +35,7 @@ def _dump(args):
 def _diff(args):
 
     # Load API diff
-    diff = APIDiff.from_files(args.old_dump, args.new_dump)
+    diff = APIDiff.from_files(args.old_dump, args.new_dump, args.ignore)
 
     if args.output is None:
 
@@ -83,6 +83,13 @@ def cli(*argv):
     )
     parser_diff.add_argument(
         "-t", "--text", action="store_true", help="Output API diff in text format"
+    )
+    parser_diff.add_argument(
+        "-i",
+        "--ignore",
+        action="append",
+        type=APIFilter.from_str,
+        help="Use filter to ignore API dump entries before comparison",
     )
     parser_diff.add_argument(
         "old_dump", type=Path, help="File containing dump of old API"
