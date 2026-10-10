@@ -535,6 +535,7 @@ class APIDiff:
         self,
         old: APIDump,
         new: APIDump,
+        ignore_filters: Optional[List[APIFilter]] = None,
     ):
         """Differences between two Python public API dumps.
 
@@ -543,6 +544,8 @@ class APIDiff:
                 Dump of the old public API.
             new (APIDump):
                 Dump of the new public API.
+            ignore_filters (Optional[List[APIFilter]]):
+                Remove API entries that match filters.
         """
 
         self.old_dump_file = old.dump_file
@@ -550,6 +553,11 @@ class APIDiff:
 
         self.new_dump_file = new.dump_file
         self.new_modules = new.modules
+
+        # Apply filters
+        if ignore_filters and len(ignore_filters) > 0:
+            old = old.apply_ignore_filter(ignore_filters)
+            new = new.apply_ignore_filter(ignore_filters)
 
         # Entries removed from `new` that remain in `old`
         self.removed = frozenset(old.api - new.api)
@@ -562,7 +570,7 @@ class APIDiff:
         cls: Type[APIDiffType],
         old_dump_file: Union[Path, str],
         new_dump_file: Union[Path, str],
-        ignore_filters: Optional[List[APIFilterType]] = None,
+        ignore_filters: Optional[List[APIFilter]] = None,
     ) -> APIDiffType:
         """Differences between two Python public API dumps loaded from files.
 
@@ -571,7 +579,7 @@ class APIDiff:
                 Name of file containing dump of the old public API.
             new_dump_file (Union[Path, str]):
                 Name of file containing dump of the new public API.
-            ignore_filters (Optional[List[APIFilterType]]):
+            ignore_filters (Optional[List[APIFilter]]):
                 Remove API entries that match filters.
 
         Returns:
@@ -582,13 +590,8 @@ class APIDiff:
         old = APIDump.load_from_file(old_dump_file)
         new = APIDump.load_from_file(new_dump_file)
 
-        # Apply filters
-        if ignore_filters and len(ignore_filters) > 0:
-            old = old.apply_ignore_filter(ignore_filters)
-            new = new.apply_ignore_filter(ignore_filters)
-
         # Create instance
-        inst = cls(old, new)
+        inst = cls(old, new, ignore_filters)
 
         return inst
 
