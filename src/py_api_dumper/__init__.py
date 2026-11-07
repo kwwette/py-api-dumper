@@ -12,6 +12,7 @@ import inspect
 import json
 import pkgutil
 import sys
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from types import ModuleType, NoneType
 from typing import (
@@ -30,7 +31,11 @@ from typing import (
 )
 
 __author__ = "Karl Wette"
-__version__ = "4.2.1"
+
+try:
+    __version__ = version("py-api-dumper")
+except PackageNotFoundError:  # pragma: no cover
+    __version__ = "0.0.0.dev0"
 
 APIFilterType = TypeVar("APIFilterType", bound="APIFilter")
 APIDumpType = TypeVar("APIDumpType", bound="APIDump")

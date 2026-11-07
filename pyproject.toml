@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=64.0"]
+requires = ["setuptools>=80", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -11,7 +11,10 @@ authors = [
 requires-python = ">=3.11"
 readme = "README.md"
 license = "MIT"
-license-files = ["LICENSES/MIT.txt", "LICENSES/CC0-1.0.txt"]
+license-files = [
+    'LICENSES/MIT.txt',
+    'LICENSES/CC0-1.0.txt',
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
@@ -25,8 +28,9 @@ Issues = "https://github.com/kwwette/py-api-dumper/issues"
 [project.scripts]
 py-api-dumper = "py_api_dumper.cli:cli"
 
-[tool.setuptools.dynamic]
-version = {attr = "py_api_dumper.__version__"}
+[tool.setuptools_scm]
+scm.git.pre_parse = "fail_on_shallow"
+local_scheme = "node-and-timestamp"
 
 [tool.ruff]
 fix = true
@@ -88,12 +92,28 @@ script = """
 python -m pytest ...
 """
 
+[tool.ppqs.scripts.version]
+description = "Print the current package version"
+script = "python -m setuptools_scm"
+
+[tool.ppqs.scripts.tag]
+description = "Tag a release"
+script = [
+    ["git", "status"],
+    ["git", "diff", "--quiet", "--exit-code"],
+    ["ppqs", "lint"],
+    ["ppqs", "build"],
+    ["ppqs", "test"],
+    ["git", "commit", "--allow-empty", "-m", "Version {1}.{2}.{3}"],
+    ["git", "tag", "-a", "-m", "Version {1}.{2}.{3}", "v{1}.{2}.{3}"],
+]
+
 [tool.ppqs.scripts.upload]
 description = "Upload package"
 script = [
-    ["ppqs", "test"],
+    ["ppqs", "lint"],
     ["ppqs", "build"],
-    ["twine", "upload", ["dist", "*"]],
+    ["ppqs", "test"],
     ["git", "push", "origin"],
     ["git", "push", "origin", "--tags"],
 ]
